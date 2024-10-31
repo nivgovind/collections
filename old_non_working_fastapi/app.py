@@ -1,14 +1,14 @@
-from fastapi import FastAPI, UploadFile, File
-from fastapi import HTTPException
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
-from utils.s3_utils import list_buckets, list_documents, upload_file, download_file, check_connection
-from config import fastapi_config # contains env variables, access by eg: "fastapi_config.AWS_ACCESS_KEY_ID"
-import shutil
-import os
+# from fastapi import FastAPI, UploadFile, File
+# from fastapi import HTTPException
+# from fastapi.responses import JSONResponse
+# from fastapi.middleware.cors import CORSMiddleware
+# from utils.s3_utils import list_buckets, list_documents, upload_file, download_file, check_connection
+# from config import fastapi_config # contains env variables, access by eg: "fastapi_config.AWS_ACCESS_KEY_ID"
+# import shutil
+# import os
 
-from fastapi import FastAPI
-from routers import rag
+# from fastapi import FastAPI
+# from routers import rag
 
 app = FastAPI()
 

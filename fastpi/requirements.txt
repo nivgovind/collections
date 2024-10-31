@@ -11,3 +11,17 @@ llama-index-embeddings-nvidia==0.1.4
 llama-index-vector-stores-milvus==0.1.20
 pymilvus==2.4.4
 python-multipart==0.0.16
+boto3
+python-multipart
+python-dotenv
+pydantic
+llama-index
+transformers
+torch
+Pillow
+python-pptx
+pdf2image
+pytesseract
+pymilvus
+snowflake-connector-python
+pandas

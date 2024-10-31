@@ -1,18 +1,29 @@
 import streamlit as st
 import requests
+import pandas as pd
 
 st.set_page_config(layout="wide")
 PROCESS_FILES_URL = "http://localhost:8000/process_files/"
 PROCESS_DIR_URL = "http://localhost:8000/process_directory/"
 PROCESS_QUERY_URL = "http://localhost:8000/query"
+LIST_DOCUMENTS_URL = "http://localhost:8000/list_documents_info"
+
+# @st.cache_data
+def fetch_document_info():
+    response = requests.get(LIST_DOCUMENTS_URL)
+    if response.status_code == 200:
+        return pd.DataFrame(response.json())
+    else:
+        st.error("Failed to fetch document information")
+        return pd.DataFrame()
 
 def main():
     col1, col2 = st.columns([1, 2])
     
     with col1:
-        st.title("Multimodal RAG")
+        st.title("Collections")
         
-        input_method = st.radio("Choose input method:", ("Upload Files", "Enter Directory Path"))
+        input_method = st.radio("Choose input method:", ("Upload Files", "Enter Directory Path", "Choose from Online List"))
         
         if input_method == "Upload Files":
             uploaded_files = st.file_uploader("Drag and drop files here", accept_multiple_files=True)
@@ -24,7 +35,7 @@ def main():
                         st.success("Files processed and index created!")
                     else:
                         st.error("Error processing files.")
-        else:
+        elif input_method == "Enter Directory Path":
             directory_path = st.text_input("Enter directory path:")
             if directory_path and st.button("Process Directory"):
                 with st.spinner("Processing directory..."):
@@ -33,6 +44,27 @@ def main():
                         st.success("Directory processed and index created!")
                     else:
                         st.error("Error processing directory.")
+        else:  # Choose from the sf Online List
+            df = fetch_document_info()
+            if not df.empty:
+                st.write("Select a document:")
+                for i, row in df.iterrows():
+                    col1, col2 = st.columns([1, 3])
+                    with col1:
+                        st.image(row['document_cover_image_link'], width=100)
+                    with col2:
+                        st.write(f"**{row['document_name']}**")
+                        st.write(row['summary'][:100] + "..." if len(row['summary']) > 100 else row['summary'])
+                        if st.button(f"Select {row['document_name']}", key=f"select_{i}"):
+                            with st.spinner(f"Processing {row['document_name']}..."):
+                                response = requests.post(PROCESS_FILES_URL, json={
+                                    "document_name": row['document_name'],
+                                    "s3_pdf_link": row['s3_pdf_link']
+                                })
+                                if response.status_code == 200:
+                                    st.success(f"{row['document_name']} processed and added to index!")
+                                else:
+                                    st.error(f"Error processing {row['document_name']}.")
     
     with col2:
         st.title("Chat")
