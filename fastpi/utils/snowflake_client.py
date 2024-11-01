@@ -12,20 +12,23 @@ class SnowflakeClient:
             database=fastapi_config.SNOWFLAKE_DATABASE,
             schema=fastapi_config.SNOWFLAKE_SCHEMA
         )
+        pass
 
     def fetch_document_info(self):
-        df = self.create_fallback_dataframe()
+        # df = self.create_fallback_dataframe()
+        # print("fetch_document_info:", df)
+        query = """
+        SELECT title, summary, pdf_link, image_link
+        FROM publications
+        """
+
+        cursor = self.conn.cursor()
+        cursor.execute(query)
+        columns = [desc[0] for desc in cursor.description]
+        data = cursor.fetchall()
+        df = pd.DataFrame(data, columns=columns)
         print("fetch_document_info:", df)
-        # query = """
-        # SELECT document_name, s3_pdf_link, image_links, document_cover_image_link, summary
-        # FROM source_documents
-        # """
-        # cursor = self.conn.cursor()
-        # cursor.execute(query)
-        # columns = [desc[0] for desc in cursor.description]
-        # data = cursor.fetchall()
-        # df = pd.DataFrame(data, columns=columns)
-        # cursor.close()
+        cursor.close()
         return df
 
 

@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
+from typing import List
 from fastapi.responses import JSONResponse
 from llama_index.core import Settings, VectorStoreIndex, StorageContext
 from llama_index.vector_stores.milvus import MilvusVectorStore
@@ -6,6 +7,8 @@ from llama_index.core.node_parser import SentenceSplitter
 from llama_index.embeddings.nvidia import NVIDIAEmbedding
 from llama_index.llms.nvidia import NVIDIA
 from pydantic import BaseModel
+from typing import List
+from services.document_service import get_all_documents
 import shutil
 import os
 
@@ -19,6 +22,12 @@ from utils.snowflake_client import SnowflakeClient
 
 
 from IPython import embed
+
+
+from pydantic import BaseModel
+
+class DocumentSelection(BaseModel):
+    document_id: str
 
 
 app = FastAPI()
@@ -84,7 +93,13 @@ def get_document_details(document_name: str):
     except Exception as e:
         return HTTPException(status_code=404, detail=str(e))
 
-
+@app.get("/documents", response_model=List[DocumentInfo])
+async def list_documents():
+    try:
+        documents = await get_all_documents()
+        return documents
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/upload")
 async def upload_to_s3(file: UploadFile = File(...)):
@@ -136,12 +151,35 @@ def list_documents_info():
     try:
         snowflake_client = SnowflakeClient()
         df = snowflake_client.fetch_document_info()
+        print("list_documents_info:", df)
         snowflake_client.close_connection()
+        print("list_documents_info:", df)
         return df.to_dict(orient="records")
-        embed()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+index = None
+
+@app.post("/create_index")
+async def create_index_endpoint(directory: str):
+    global index
+    try:
+        index = create_index(directory)
+        return {"message": "Index created successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/query")
+async def query_endpoint(query: str):
+    global index
+    if not index:
+        raise HTTPException(status_code=400, detail="Index not created")
+    try:
+        response = query_index(index, query)
+        return {"response": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
