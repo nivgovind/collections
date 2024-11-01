@@ -21,6 +21,8 @@ from PIL import Image
 import requests
 from llama_index.llms.nvidia import NVIDIA #set API key
 from config import fastapi_config
+from llama_index import SimpleDirectoryReader, GPTVectorStoreIndex, LLMPredictor, ServiceContext
+from langchain import OpenAI
 
 def get_b64_image_from_content(image_content):
     """Convert image content to base64 encoded string."""
@@ -162,3 +164,14 @@ def save_uploaded_file(uploaded_file):
         temp_file.write(uploaded_file.read())
     
     return temp_file_path
+
+
+def create_index(directory_path):
+    documents = SimpleDirectoryReader(directory_path).load_data()
+    index = GPTVectorStoreIndex.from_documents(documents)
+    return index
+
+def query_index(index, query_text):
+    query_engine = index.as_query_engine()
+    response = query_engine.query(query_text)
+    return response.response
