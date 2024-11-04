@@ -1,7 +1,18 @@
+
+# NOTE: NOT USED IN THIS PROJECT
+# ALl endpoints moved to main.py
+# NOT WORKING!!!!!
+
+
 from fastapi import APIRouter, UploadFile, File, Form
 from services.rag_service import RAGService
 import tempfile
 import os
+
+
+# NOTE: NOT USED IN THIS PROJECT
+# ALl endpoints moved to main.py
+# NOT WORKING!!!!!
 
 router = APIRouter()
 rag_service = RAGService()

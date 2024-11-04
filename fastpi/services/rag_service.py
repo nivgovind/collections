@@ -1,3 +1,10 @@
+
+# NOTE: NOT USED IN THIS PROJECT
+# ALl endpoints moved to main.py
+# NOT WORKING!!!!!
+
+
+
 # from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 # from llama_index.vector_stores.milvus import MilvusVectorStore
 # from utils.document_processors import process_file
